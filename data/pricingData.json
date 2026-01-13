@@ -1,0 +1,6 @@
+{
+  "A": { "unit_price": 50, "special": { "count": 3, "price": 140 } },
+  "B": { "unit_price": 35, "special": { "count": 2, "price": 60 } },
+  "C": { "unit_price": 25 },
+  "D": { "unit_price": 12 }
+}
