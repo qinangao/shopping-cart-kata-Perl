@@ -3,27 +3,43 @@ package Checkout;
 use strict;
 use warnings;
 use Exporter 'import';
+use JSON::MaybeXS qw(decode_json);
+use Path::Tiny;
+use FindBin qw($Bin);
 
 our @EXPORT_OK = qw(calculate_subtotal);
 
-my $PRODUCTS = {
-    A => {
-        unit_price => 50,
-        special    => {
-            count => 3,
-            price => 140
-        }
-    },
-    B => {
-        unit_price => 35,
-        special    => {
-            count => 2,
-            price => 60
-        }
-    },
-    C => {unit_price => 25},
-    D => {unit_price => 12}
-};
+# my $PRODUCTS = {
+#     A => {
+#         unit_price => 50,
+#         special    => {
+#             count => 3,
+#             price => 140
+#         }
+#     },
+#     B => {
+#         unit_price => 35,
+#         special    => {
+#             count => 2,
+#             price => 60
+#         }
+#     },
+#     C => {unit_price => 25},
+#     D => {unit_price => 12}
+# };
+
+sub _load_products {
+    my $file = path($Bin)->sibling('data', 'pricingData.json');
+    my $data = decode_json($file->slurp_utf8);
+
+    unless (ref $data eq 'HASH') {
+        die 'pricingData.json must contain a JSON object';
+    }
+
+    return $data;
+}
+
+my $PRODUCTS = _load_products();
 
 sub calculate_subtotal {
     my ($items) = @_;
