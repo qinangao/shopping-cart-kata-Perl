@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use JSON::MaybeXS qw(decode_json encode_json);
 use Plack::Request;
+use lib 'lib';
 use Checkout qw(calculate_subtotal);
 
 my $app = sub {
