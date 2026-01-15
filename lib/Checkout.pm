@@ -9,38 +9,23 @@ use FindBin qw($Bin);
 
 our @EXPORT_OK = qw(calculate_subtotal);
 
-my $PRODUCTS = {
-    A => {
-        unit_price => 50,
-        special    => {
-            count => 3,
-            price => 140
-        }
-    },
-    B => {
-        unit_price => 35,
-        special    => {
-            count => 2,
-            price => 60
-        }
-    },
-    C => {unit_price => 25},
-    D => {unit_price => 12}
-};
+# Load data from JSON file
+sub _load_products {
 
-# sub _load_products {
+    my $file =
+        path(__FILE__)->parent->parent->child('data', 'pricingData.json');
+    warn "Loading pricing from: $file\n";
 
-#     my $file = path($Bin)->parent->child('data', 'pricingData.json');
-#     my $data = decode_json($file->slurp_utf8);
+    my $data = decode_json($file->slurp_utf8);
 
-#     unless (ref $data eq 'HASH') {
-#         die 'pricingData.json must contain a JSON object';
-#     }
+    unless (ref $data eq 'HASH') {
+        die 'pricingData.json must contain a JSON object';
+    }
 
-#     return $data;
-# }
+    return $data;
+}
 
-# my $PRODUCTS = _load_products();
+my $PRODUCTS = _load_products();
 
 # Validation:
 sub _validate_items {
