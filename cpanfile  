@@ -2,7 +2,8 @@ requires 'Plack';
 requires 'JSON::MaybeXS';
 requires 'Path::Tiny';
 
-# test:
-develop_requires 'Test::More';
-develop_requires 'Test::Exception';
-develop_requires 'Plack::Test';
+on 'test' => sub {
+    requires 'Test::More';
+    requires 'Test::Exception';
+    requires 'Plack::Test';
+};
