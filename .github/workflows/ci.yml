@@ -20,7 +20,6 @@ jobs:
           perl-version: "5.38"
           install-modules-with: cpanm
           install-modules-args: --with-develop --with-configure
-          cache-version: 2
 
       - name: Run tests
         run: prove -lv t
