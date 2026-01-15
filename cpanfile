@@ -1,4 +1,3 @@
-requires 'perl',          '5.038';
 requires 'Plack',         '1.0048';
 requires 'JSON::MaybeXS', '0';
 requires 'Path::Tiny',    '0.144';
