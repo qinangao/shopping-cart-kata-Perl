@@ -1,5 +1,3 @@
-#!/usr/bin/env perl
-
 use strict;
 use warnings;
 use Test::More;
@@ -85,7 +83,7 @@ ok($res->is_success(), 'Successful request');
 is(
     $res->content,
     encode_json({subtotal => 330}),
-    'should return correct total for multiple special sets and a remainder'
+    'return correct total for multiple special sets and a remainder'
 );
 
 # Test 5: Check for a mix of items with and without special deals
@@ -114,7 +112,7 @@ ok($res->is_success(), 'Successful request');
 is(
     $res->content,
     encode_json({subtotal => 225}),
-    'should return correct total for a mix of items with and without special deals'
+    'return correct total for a mix of items with and without special deals'
 );
 
 # Test 6: Check for big mixed cart with all items
@@ -147,7 +145,7 @@ ok($res->is_success(), 'Successful request');
 is(
     $res->content,
     encode_json({subtotal => 447}),
-    'should calculate a complex cart correctly'
+    'calculate a complex cart correctly'
 );
 
 # Test 7: Check for quantity 0 for multiple items
@@ -172,7 +170,7 @@ ok($res->is_success(), 'Successful request');
 is(
     $res->content,
     encode_json({subtotal => 0}),
-    'should return 0 if all items have quantity 0'
+    'return 0 if all items have quantity 0'
 );
 
 # Test 8: Check for 0 quantity for single item
@@ -193,28 +191,28 @@ ok($res->is_success(), 'Successful request');
 is(
     $res->content,
     encode_json({subtotal => 0}),
-    'should return 0 for 0 quantity'
+    'return 0 for 0 quantity'
 );
-FIXME:
-# Test 9: Check for a missing items field
-# $req = POST '/checkout',
-#     Content_Type => 'application/json',
-#     Content      => encode_json({});
 
-# $res = $test->request($req);
-# is($res->code, 400, 'return 400 when items field is missing');
-# my $json_res = decode_json($res->content);
-# like($json_res->{error}, qr/Invalid item/, 'Error message matches');
+# Test 9: Check for a missing items field
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json({});
+
+$res = $test->request($req);
+is($res->code, 400, 'return 400 when items field is missing');
+my $json_res = decode_json($res->content);
+like($json_res->{error}, qr/Items field is required /, 'Error message matches');
 
 # Test 10: Check if the item is not an array.
-# $req = POST '/checkout',
-#     Content_Type => 'application/json',
-#     Content      => encode_json({items => "not an array"});
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json({items => "not an array"});
 
-# $res = $test->request($req);
-# is($res->code, 400, 'return 400 when items field is missing');
-# $json_res = decode_json($res->content);
-# like($json_res->{error}, qr/items must be an array/, 'Error message matches');
+$res = $test->request($req);
+is($res->code, 400, 'return 400 when items is not an array');
+$json_res = decode_json($res->content);
+like($json_res->{error}, qr/Items must be an array/, 'Error message matches');
 
 # Test 11: Check for an item with missing code
 $req = POST '/checkout',
@@ -226,27 +224,79 @@ $req = POST '/checkout',
 
 $res = $test->request($req);
 is($res->code, 400, 'returns 400 when code is missing');
-my $json_res = decode_json($res->content);
+$json_res = decode_json($res->content);
 like($json_res->{error}, qr/Code is required/, 'Error message matches');
 
-# Test 12: Check if the item code is not a string.
+# Test 12: Check for an item with missing quantity
 $req = POST '/checkout',
     Content_Type => 'application/json',
-    Content      => encode_json({
-        items => [{code => 123, quantity => 1}]    # Missing quantity
-    }
+    Content      => encode_json({items => [{code => "A"}]});
+
+$res = $test->request($req);
+is($res->code, 400, 'returns 400 when quantity is missing');
+$json_res = decode_json($res->content);
+like($json_res->{error}, qr/Quantity is required/, 'Error message matches');
+
+# Test 15: Check for negative quantity
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json({items => [{code => "A", quantity => -1}]});
+
+$res = $test->request($req);
+is($res->code, 400, 'returns 400 when quantity is negative');
+$json_res = decode_json($res->content);
+like(
+    $json_res->{error},
+    qr/Quantity must be between 0 and 1000/,
+    'Error message matches'
+);
+
+# Test 16: Check for duplicate items in the cart
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+    {items => [{code => "A", quantity => 1}, {code => "A", quantity => 2}]}
     );
 
 $res = $test->request($req);
-is($res->code, 400, 'Returns 400 when code is not a string');
+is($res->code, 400, 'returns 400 for duplicate items');
 $json_res = decode_json($res->content);
-like($json_res->{error}, qr/code must be a string/, 'Error message matches');
+like(
+    $json_res->{error},
+    qr/Duplicate item A is not allowed/,
+    'Error message matches'
+);
 
-TODO:
-# Test 13: Check if the item code is empty string with space.
-# Test 14: Check for an item with missing quantity
-# Test 15: Check for negative quantity
-# Test 16: Check for duplicate items in the cart
 # Test 17: Check for invalid item code
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+    {items => [{code => "Z", quantity => 1}]}
+    );
+
+$res = $test->request($req);
+is($res->code, 400, 'returns 400 for invalid item code');
+$json_res = decode_json($res->content);
+like(
+    $json_res->{error},
+    qr/Product Z doesn't exist/,
+    'Error message matches'
+);
+
 # Test 18: Check for uppercase item codes
+$req = POST '/checkout',
+    Content_Type => 'application/json',
+    Content      => encode_json(
+    {items => [{code => "a", quantity => 1}]}
+    );
+
+$res = $test->request($req);
+is($res->code, 400, "returns 400 for treating 'a' and 'A' as different codes");
+$json_res = decode_json($res->content);
+like(
+    $json_res->{error},
+    qr/Product a doesn't exist/,
+    'Error message matches'
+);
+
 done_testing;
