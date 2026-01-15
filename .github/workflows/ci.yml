@@ -14,22 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Cache CPAN modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/perl5
-            ./local
-          key: ${{ runner.os }}-perl-${{ hashFiles('**/cpanfile') }}
-          restore-keys: |
-            ${{ runner.os }}-perl-
-
       - name: Set up perl and install CPAN modules
         uses: shogo82148/actions-setup-perl@v1
         with:
           perl-version: "5.38"
           install-modules-with: cpanm
           install-modules-args: --with-develop --with-configure
+          cache-version: 2
 
       - name: Run tests
         run: prove -lv t
