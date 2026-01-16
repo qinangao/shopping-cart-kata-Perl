@@ -14,7 +14,6 @@ sub _load_products {
 
     my $file =
         path(__FILE__)->parent->parent->child('data', 'pricingData.json');
-    warn "Loading pricing from: $file\n";
 
     my $data = decode_json($file->slurp_utf8);
 
@@ -66,13 +65,13 @@ sub _validate_item {
 
     # Check for duplicate items
     if ($seen->{$code}) {
-        die "Duplicate item $code is not allowed\n";
+        die "Duplicate item $code is not allowed";
     }
     $seen->{$code} = 1;
 
     # Check for invalid item code
     unless ($PRODUCTS->{$code}) {
-        die "Product $code doesn't exist\n";
+        die "Product $code doesn't exist";
     }
 }
 
